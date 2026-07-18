@@ -1,23 +1,50 @@
 import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
+import Icon from '../components/Icon';
+import { colors } from '../theme/colors';
 import HomeScreen from '../screens/HomeScreen';
-import DetailScreen from '../screens/DetailScreen';
+import InputScreen from '../screens/InputScreen';
+import PlanScreen from '../screens/PlanScreen';
+import PostureScreen from '../screens/PostureScreen';
 
-export type RootStackParamList = {
+export type RootTabParamList = {
   Home: undefined;
-  Detail: undefined;
+  Input: undefined;
+  Plan: undefined;
+  Posture: undefined;
 };
 
-const Stack = createNativeStackNavigator<RootStackParamList>();
+const TAB_ICONS: Record<keyof RootTabParamList, { icon: string; iconActive: string }> = {
+  Home: { icon: 'home', iconActive: 'home-fill' },
+  Input: { icon: 'pencil', iconActive: 'pencil-fill' },
+  Plan: { icon: 'sparkle', iconActive: 'sparkle-fill' },
+  Posture: { icon: 'camera', iconActive: 'camera-fill' },
+};
+
+const Tab = createBottomTabNavigator<RootTabParamList>();
 
 export default function RootNavigator() {
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="Home">
-        <Stack.Screen name="Home" component={HomeScreen} options={{ title: 'Home' }} />
-        <Stack.Screen name="Detail" component={DetailScreen} options={{ title: 'Detail' }} />
-      </Stack.Navigator>
+      <Tab.Navigator
+        screenOptions={({ route }) => ({
+          headerShown: false,
+          tabBarActiveTintColor: colors.primaryNormal,
+          tabBarInactiveTintColor: colors.labelAssistive,
+          tabBarLabelStyle: { fontSize: 11, fontWeight: '600' },
+          tabBarStyle: { height: 64, borderTopColor: colors.lineNormal },
+          tabBarIcon: ({ focused, color, size }) => {
+            const meta = TAB_ICONS[route.name as keyof RootTabParamList];
+            return <Icon name={focused ? meta.iconActive : meta.icon} size={size} color={color} />;
+          },
+        })}
+      >
+        <Tab.Screen name="Home" component={HomeScreen} options={{ title: '홈' }} />
+        <Tab.Screen name="Input" component={InputScreen} options={{ title: '기록' }} />
+        <Tab.Screen name="Plan" component={PlanScreen} options={{ title: 'AI 계획' }} />
+        <Tab.Screen name="Posture" component={PostureScreen} options={{ title: '자세교정' }} />
+      </Tab.Navigator>
     </NavigationContainer>
   );
 }

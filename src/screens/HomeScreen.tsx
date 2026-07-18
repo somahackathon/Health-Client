@@ -1,42 +1,143 @@
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { Button, StyleSheet, Text, View } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { RootStackParamList } from '../navigation/RootNavigator';
-import { useCounterStore } from '../store/useCounterStore';
+import Icon from '../components/Icon';
+import SegmentedControl from '../components/SegmentedControl';
+import { usePapsEvents } from '../hooks/usePapsEvents';
+import { RootTabParamList } from '../navigation/RootNavigator';
+import { useFitnessStore } from '../store/useFitnessStore';
+import { colors, gradeColor, withAlpha } from '../theme/colors';
+import HomeLayoutA from './home/HomeLayoutA';
+import HomeLayoutB from './home/HomeLayoutB';
+import HomeLayoutC from './home/HomeLayoutC';
+import { GRADE_TEXT } from '../lib/paps';
 
-type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
+const HOME_LAYOUT_ITEMS = [
+  { label: '스택', value: 'a' },
+  { label: '히어로', value: 'b' },
+  { label: '대시보드', value: 'c' },
+];
 
-export default function HomeScreen({ navigation }: Props) {
-  const count = useCounterStore((state) => state.count);
-  const increment = useCounterStore((state) => state.increment);
+export type Shortcut = {
+  key: string;
+  title: string;
+  desc: string;
+  icon: string;
+  fg: string;
+  bg: string;
+  onGo: () => void;
+};
+
+export default function HomeScreen() {
+  const navigation = useNavigation<BottomTabNavigationProp<RootTabParamList>>();
+  const homeLayout = useFitnessStore((s) => s.homeLayout);
+  const setHomeLayout = useFitnessStore((s) => s.setHomeLayout);
+  const overall = useFitnessStore((s) => s.overall());
+  const measuredDate = useFitnessStore((s) => s.measuredDate);
+  const papsEvents = usePapsEvents();
+
+  const overallFg = gradeColor(overall).fg;
+  const overallText = GRADE_TEXT[overall];
+
+  const shortcuts: Shortcut[] = [
+    {
+      key: 'plan',
+      title: 'AI 맞춤 계획표',
+      desc: '주간 운동 계획 확인하기',
+      icon: 'sparkle-fill',
+      fg: colors.accentForegroundViolet,
+      bg: withAlpha(colors.accentForegroundViolet, 0.12),
+      onGo: () => navigation.navigate('Plan'),
+    },
+    {
+      key: 'posture',
+      title: 'AI 자세교정',
+      desc: '카메라로 자세 분석받기',
+      icon: 'camera-fill',
+      fg: colors.accentForegroundCyan,
+      bg: withAlpha(colors.accentForegroundCyan, 0.14),
+      onGo: () => navigation.navigate('Posture'),
+    },
+  ];
+
+  const goInput = () => navigation.navigate('Input');
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Health Client</Text>
-      <Text style={styles.count}>Count: {count}</Text>
-      <Button title="Increment" onPress={increment} />
-      <View style={styles.spacer} />
-      <Button title="Go to Detail" onPress={() => navigation.navigate('Detail')} />
-    </View>
+    <SafeAreaView style={styles.root} edges={['top']}>
+      <ScrollView showsVerticalScrollIndicator={false}>
+        <View style={styles.header}>
+          <View>
+            <Text style={styles.eyebrow}>체력관리 코치</Text>
+            <Text style={styles.greeting}>하준님, 오늘도 힘내요</Text>
+          </View>
+          <View style={styles.bellButton}>
+            <Icon name="bell" size={20} color={colors.labelNeutral} />
+          </View>
+        </View>
+
+        <View style={styles.segmentWrap}>
+          <SegmentedControl items={HOME_LAYOUT_ITEMS} value={homeLayout} onChange={(v) => setHomeLayout(v as 'a' | 'b' | 'c')} />
+        </View>
+
+        {homeLayout === 'a' && (
+          <HomeLayoutA
+            overall={overall}
+            overallFg={overallFg}
+            overallText={overallText}
+            measuredDate={measuredDate}
+            papsEvents={papsEvents}
+            shortcuts={shortcuts}
+            goInput={goInput}
+          />
+        )}
+        {homeLayout === 'b' && (
+          <HomeLayoutB
+            overall={overall}
+            overallFg={overallFg}
+            overallText={overallText}
+            measuredDate={measuredDate}
+            papsEvents={papsEvents}
+            shortcuts={shortcuts}
+            goInput={goInput}
+          />
+        )}
+        {homeLayout === 'c' && (
+          <HomeLayoutC
+            overall={overall}
+            overallFg={overallFg}
+            overallText={overallText}
+            measuredDate={measuredDate}
+            papsEvents={papsEvents}
+            shortcuts={shortcuts}
+            goInput={goInput}
+          />
+        )}
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
+  root: { flex: 1, backgroundColor: colors.backgroundAlternative },
+  header: {
+    paddingHorizontal: 20,
+    paddingTop: 22,
+    paddingBottom: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  eyebrow: { fontSize: 13, fontWeight: '600', color: colors.labelAlternative },
+  greeting: { fontSize: 23, fontWeight: '700', color: colors.labelNormal, marginTop: 2 },
+  bellButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.fillNormal,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 12,
   },
-  title: {
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  count: {
-    fontSize: 16,
-  },
-  spacer: {
-    height: 8,
-  },
+  segmentWrap: { paddingHorizontal: 20, paddingTop: 6, paddingBottom: 4 },
 });
