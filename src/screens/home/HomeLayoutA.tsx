@@ -7,7 +7,7 @@ import { colors, radius, withAlpha } from '../../theme/colors';
 import { Shortcut } from '../HomeScreen';
 
 type Props = {
-  overall: number;
+  overall: number | null;
   overallFg: string;
   overallText: string;
   measuredDate: string;
@@ -21,7 +21,7 @@ export default function HomeLayoutA({ overall, overallFg, overallText, measuredD
     <View style={styles.container}>
       <View style={[styles.overallCard, { backgroundColor: withAlpha(colors.primaryNormal, 0.06) }]}>
         <View style={[styles.overallCircle, { borderColor: overallFg }]}>
-          <Text style={[styles.overallGrade, { color: overallFg }]}>{overall}</Text>
+          <Text style={[styles.overallGrade, { color: overallFg }]}>{overall ?? '-'}</Text>
           <Text style={styles.overallLabel}>등급</Text>
         </View>
         <View style={{ flex: 1, minWidth: 0 }}>
@@ -48,11 +48,10 @@ export default function HomeLayoutA({ overall, overallFg, overallText, measuredD
               <Text style={styles.eventCat}>{ev.cat}</Text>
             </View>
             <Text style={styles.eventValue}>
-              {ev.value}
-              {ev.unit}
+              {ev.value !== null ? `${ev.value}${ev.unit}` : '-'}
             </Text>
             <View style={[styles.gradeBadge, { backgroundColor: ev.bg }]}>
-              <Text style={[styles.gradeBadgeText, { color: ev.fg }]}>{ev.grade}등급</Text>
+              <Text style={[styles.gradeBadgeText, { color: ev.fg }]}>{ev.grade ? `${ev.grade}등급` : '-'}</Text>
             </View>
           </View>
         ))}
