@@ -16,7 +16,12 @@
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO"
+      ],
+      "package": "com.h4zx7.HealthClient"
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -30,6 +35,11 @@
           "recordAudioAndroid": true
         }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "be8ab6ed-169c-493d-9002-88e1471d328a"
+      }
+    }
   }
 }
