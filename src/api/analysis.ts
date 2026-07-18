@@ -9,13 +9,13 @@ export function requestFitnessAnalysis(request: FitnessAnalysisRequest): Promise
 }
 
 export async function requestPostureAnalysis(exerciseType: string, videoUri: string): Promise<PostureAnalysisResponse> {
-  // Expo's fetch-based FormData only accepts real Blob/File parts — the classic RN
-  // `{ uri, name, type }` shorthand throws "Unsupported FormDataPart implementation".
-  const buffer = await new File(videoUri).arrayBuffer();
-  const blob = new Blob([buffer], { type: 'video/mp4' });
+  // expo-file-system's File already implements Blob — RN's own Blob polyfill throws
+  // "Creating blobs from 'ArrayBuffer' and 'ArrayBufferView' are not supported" if you
+  // try to rebuild one from an arrayBuffer(), so just hand the File to FormData as-is.
+  const file = new File(videoUri);
 
   const form = new FormData();
-  form.append('video', blob, 'posture.mp4');
+  form.append('video', file, file.name || 'posture.mp4');
 
   return apiPostMultipart(
     '/api/posture-analyses',

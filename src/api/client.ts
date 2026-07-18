@@ -1,3 +1,5 @@
+import { fetch as expoFetch } from 'expo/fetch';
+
 import { API_BASE_URL } from '../config/env';
 import { ApiEnvelope } from './types';
 
@@ -12,7 +14,7 @@ export class ApiError extends Error {
   }
 }
 
-async function unwrap<T>(res: Response): Promise<T> {
+async function unwrap<T>(res: { json(): Promise<ApiEnvelope<T>>; status: number }): Promise<T> {
   const body: ApiEnvelope<T> = await res.json();
   if (!body.success || !body.data) {
     throw new ApiError(body.error?.code ?? 'UNKNOWN', body.error?.message ?? `Request failed (${res.status})`, body.error?.details);
@@ -54,7 +56,9 @@ export async function apiPostMultipart<T>(
   const qs = Object.entries(query)
     .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
     .join('&');
-  const res = await fetch(`${API_BASE_URL}${path}${qs ? `?${qs}` : ''}`, {
+  // File/Blob-backed FormData bodies need expo/fetch's network stack — RN's
+  // built-in global fetch only accepts the legacy { uri, name, type } part shape.
+  const res = await expoFetch(`${API_BASE_URL}${path}${qs ? `?${qs}` : ''}`, {
     method: 'POST',
     headers,
     body: form,
