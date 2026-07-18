@@ -1,4 +1,5 @@
-import { ActivityIndicator, Pressable, StyleSheet, Text, ViewStyle } from 'react-native';
+import { useState } from 'react';
+import { ActivityIndicator, Animated, Pressable, StyleSheet, Text, ViewStyle } from 'react-native';
 
 import { colors, radius } from '../theme/colors';
 
@@ -23,33 +24,44 @@ export default function Button({
 }: Props) {
   const isOutlined = variant === 'outlined';
   const isDisabled = disabled || loading;
+  const [scale] = useState(() => new Animated.Value(1));
+
+  const animateTo = (toValue: number) => {
+    Animated.spring(scale, { toValue, useNativeDriver: true, speed: 40, bounciness: 6 }).start();
+  };
 
   return (
     <Pressable
       onPress={onPress}
+      onPressIn={() => !isDisabled && animateTo(0.97)}
+      onPressOut={() => animateTo(1)}
       disabled={isDisabled}
-      style={({ pressed }) => [
-        styles.base,
-        isOutlined ? styles.outlined : styles.solid,
-        fullWidth && styles.fullWidth,
-        isDisabled && (isOutlined ? styles.outlinedDisabled : styles.solidDisabled),
-        pressed && !isDisabled && styles.pressed,
-        style,
-      ]}
+      style={fullWidth && styles.fullWidth}
     >
-      {loading ? (
-        <ActivityIndicator color={isOutlined ? colors.labelNeutral : colors.staticWhite} />
-      ) : (
-        <Text
-          style={[
-            styles.text,
-            isOutlined ? styles.outlinedText : styles.solidText,
-            isDisabled && styles.disabledText,
-          ]}
-        >
-          {title}
-        </Text>
-      )}
+      <Animated.View
+        style={[
+          styles.base,
+          isOutlined ? styles.outlined : styles.solid,
+          fullWidth && styles.fullWidth,
+          isDisabled && (isOutlined ? styles.outlinedDisabled : styles.solidDisabled),
+          { transform: [{ scale }] },
+          style,
+        ]}
+      >
+        {loading ? (
+          <ActivityIndicator color={isOutlined ? colors.labelNeutral : colors.staticWhite} />
+        ) : (
+          <Text
+            style={[
+              styles.text,
+              isOutlined ? styles.outlinedText : styles.solidText,
+              isDisabled && styles.disabledText,
+            ]}
+          >
+            {title}
+          </Text>
+        )}
+      </Animated.View>
     </Pressable>
   );
 }
@@ -67,7 +79,6 @@ const styles = StyleSheet.create({
   solidDisabled: { backgroundColor: colors.fillStrong },
   outlined: { backgroundColor: colors.backgroundNormal, borderWidth: 1, borderColor: colors.lineNormal },
   outlinedDisabled: { borderColor: colors.lineAlternative },
-  pressed: { opacity: 0.85 },
   text: { fontSize: 15, fontWeight: '700' },
   solidText: { color: colors.staticWhite },
   outlinedText: { color: colors.labelNeutral },

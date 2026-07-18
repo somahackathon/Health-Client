@@ -1,4 +1,5 @@
-import { Modal, StyleSheet, Text, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { Animated, Modal, StyleSheet, Text, View } from 'react-native';
 
 import { PAPS_META, GRADE_TEXT } from '../lib/paps';
 import { SubmitResult } from '../store/useFitnessStore';
@@ -12,15 +13,29 @@ type Props = {
 };
 
 export default function ResultModal({ result, onClose }: Props) {
+  const [backdropOpacity] = useState(() => new Animated.Value(0));
+  const [cardScale] = useState(() => new Animated.Value(0.92));
+  const [cardOpacity] = useState(() => new Animated.Value(0));
+
+  useEffect(() => {
+    if (!result) return;
+    backdropOpacity.setValue(0);
+    cardScale.setValue(0.92);
+    cardOpacity.setValue(0);
+    Animated.timing(backdropOpacity, { toValue: 1, duration: 180, useNativeDriver: true }).start();
+    Animated.timing(cardOpacity, { toValue: 1, duration: 180, useNativeDriver: true }).start();
+    Animated.spring(cardScale, { toValue: 1, useNativeDriver: true, speed: 16, bounciness: 6 }).start();
+  }, [result, backdropOpacity, cardScale, cardOpacity]);
+
   if (!result) return null;
   const meta = PAPS_META[result.id];
   const { fg, bg } = gradeColor(result.grade);
   const deltaGrade = result.prev - result.grade;
 
   return (
-    <Modal visible transparent animationType="fade" onRequestClose={onClose}>
-      <View style={styles.backdrop}>
-        <View style={styles.card}>
+    <Modal visible transparent animationType="none" onRequestClose={onClose}>
+      <Animated.View style={[styles.backdrop, { opacity: backdropOpacity }]}>
+        <Animated.View style={[styles.card, { opacity: cardOpacity, transform: [{ scale: cardScale }] }]}>
           <View style={styles.center}>
             <View style={[styles.gradeCircle, { backgroundColor: bg }]}>
               <Text style={[styles.gradeText, { color: fg }]}>{result.grade}</Text>
@@ -47,8 +62,8 @@ export default function ResultModal({ result, onClose }: Props) {
           <View style={{ marginTop: 22 }}>
             <Button title="확인" onPress={onClose} />
           </View>
-        </View>
-      </View>
+        </Animated.View>
+      </Animated.View>
     </Modal>
   );
 }
