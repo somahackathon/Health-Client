@@ -152,8 +152,10 @@ export const usePapsStore = create<PapsState>((set, get) => ({
 }));
 
 function todayDate(): string {
+  // Server validates assessmentDate against its own UTC "today" — using local
+  // device time here would send tomorrow's date for ~9h/day in UTC+9 (KST).
   const d = new Date();
-  const mm = String(d.getMonth() + 1).padStart(2, '0');
-  const dd = String(d.getDate()).padStart(2, '0');
-  return `${d.getFullYear()}-${mm}-${dd}`;
+  const mm = String(d.getUTCMonth() + 1).padStart(2, '0');
+  const dd = String(d.getUTCDate()).padStart(2, '0');
+  return `${d.getUTCFullYear()}-${mm}-${dd}`;
 }
