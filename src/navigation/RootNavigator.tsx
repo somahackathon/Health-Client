@@ -1,5 +1,6 @@
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import Icon from '../components/Icon';
 import { colors } from '../theme/colors';
@@ -24,27 +25,41 @@ const TAB_ICONS: Record<keyof RootTabParamList, { icon: string; iconActive: stri
 
 const Tab = createBottomTabNavigator<RootTabParamList>();
 
+function TabNavigator() {
+  const insets = useSafeAreaInsets();
+  const bottomInset = Math.max(insets.bottom, 8);
+
+  return (
+    <Tab.Navigator
+      screenOptions={({ route }) => ({
+        headerShown: false,
+        tabBarActiveTintColor: colors.primaryNormal,
+        tabBarInactiveTintColor: colors.labelAssistive,
+        tabBarLabelStyle: { fontSize: 11, fontWeight: '600' },
+        tabBarStyle: {
+          height: 56 + bottomInset,
+          paddingBottom: bottomInset,
+          paddingTop: 8,
+          borderTopColor: colors.lineNormal,
+        },
+        tabBarIcon: ({ focused, color, size }) => {
+          const meta = TAB_ICONS[route.name as keyof RootTabParamList];
+          return <Icon name={focused ? meta.iconActive : meta.icon} size={size} color={color} />;
+        },
+      })}
+    >
+      <Tab.Screen name="Home" component={HomeScreen} options={{ title: '홈' }} />
+      <Tab.Screen name="Input" component={InputScreen} options={{ title: '기록' }} />
+      <Tab.Screen name="Plan" component={PlanScreen} options={{ title: 'AI 계획' }} />
+      <Tab.Screen name="Posture" component={PostureScreen} options={{ title: '자세교정' }} />
+    </Tab.Navigator>
+  );
+}
+
 export default function RootNavigator() {
   return (
     <NavigationContainer>
-      <Tab.Navigator
-        screenOptions={({ route }) => ({
-          headerShown: false,
-          tabBarActiveTintColor: colors.primaryNormal,
-          tabBarInactiveTintColor: colors.labelAssistive,
-          tabBarLabelStyle: { fontSize: 11, fontWeight: '600' },
-          tabBarStyle: { height: 64, borderTopColor: colors.lineNormal },
-          tabBarIcon: ({ focused, color, size }) => {
-            const meta = TAB_ICONS[route.name as keyof RootTabParamList];
-            return <Icon name={focused ? meta.iconActive : meta.icon} size={size} color={color} />;
-          },
-        })}
-      >
-        <Tab.Screen name="Home" component={HomeScreen} options={{ title: '홈' }} />
-        <Tab.Screen name="Input" component={InputScreen} options={{ title: '기록' }} />
-        <Tab.Screen name="Plan" component={PlanScreen} options={{ title: 'AI 계획' }} />
-        <Tab.Screen name="Posture" component={PostureScreen} options={{ title: '자세교정' }} />
-      </Tab.Navigator>
+      <TabNavigator />
     </NavigationContainer>
   );
 }
