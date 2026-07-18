@@ -1,31 +1,49 @@
-import { Ionicons } from '@expo/vector-icons';
+import {
+  ArrowUp,
+  Bell,
+  Camera,
+  Check,
+  ChevronDown,
+  ChevronRight,
+  ChevronUp,
+  Circle,
+  CircleAlert,
+  CircleCheck,
+  CirclePlus,
+  CircleX,
+  Flag,
+  Home,
+  Info,
+  type LucideIcon,
+  PenLine,
+  Sparkles,
+  TriangleAlert,
+  Users,
+  X,
+} from 'lucide-react-native';
 
-// Maps the design prototype's icon names (Wanted Design System icon set) onto
-// the closest available Ionicons glyph bundled with Expo.
-const ICON_MAP: Record<string, keyof typeof Ionicons.glyphMap> = {
-  bell: 'notifications-outline',
-  home: 'home-outline',
-  'home-fill': 'home',
-  pencil: 'pencil-outline',
-  'pencil-fill': 'pencil',
-  sparkle: 'sparkles-outline',
-  'sparkle-fill': 'sparkles',
-  camera: 'camera-outline',
-  'camera-fill': 'camera',
-  'chevron-right': 'chevron-forward',
-  'chevron-up': 'chevron-up',
-  'chevron-down': 'chevron-down',
-  'circle-plus': 'add-circle-outline',
-  'circle-info': 'information-circle-outline',
-  'persons-fill': 'people',
-  'flag-fill': 'flag',
-  'arrow-up': 'arrow-up',
-  check: 'checkmark',
-  'triangle-exclamation': 'warning-outline',
-  close: 'close',
-  'circle-check-fill': 'checkmark-circle',
-  'circle-exclamation-fill': 'alert-circle',
-  'circle-close-fill': 'close-circle',
+// Maps the design prototype's icon names onto Lucide icons (MIT licensed).
+// Names ending in "-fill" render the same glyph filled solid for active/emphasis states.
+const ICON_MAP: Record<string, LucideIcon> = {
+  bell: Bell,
+  home: Home,
+  pencil: PenLine,
+  sparkle: Sparkles,
+  camera: Camera,
+  'chevron-right': ChevronRight,
+  'chevron-up': ChevronUp,
+  'chevron-down': ChevronDown,
+  'circle-plus': CirclePlus,
+  'circle-info': Info,
+  persons: Users,
+  flag: Flag,
+  'arrow-up': ArrowUp,
+  check: Check,
+  'triangle-exclamation': TriangleAlert,
+  close: X,
+  'circle-check': CircleCheck,
+  'circle-exclamation': CircleAlert,
+  'circle-close': CircleX,
 };
 
 type Props = {
@@ -35,6 +53,11 @@ type Props = {
 };
 
 export default function Icon({ name, size = 20, color = '#000' }: Props) {
-  const glyph = ICON_MAP[name] ?? 'ellipse-outline';
-  return <Ionicons name={glyph} size={size} color={color} />;
+  const filled = name.endsWith('-fill');
+  const key = filled ? name.slice(0, -'-fill'.length) : name;
+  const LucideIcon = ICON_MAP[key] ?? Circle;
+
+  return (
+    <LucideIcon size={size} color={color} fill={filled ? color : 'none'} strokeWidth={filled ? 2 : 1.75} />
+  );
 }

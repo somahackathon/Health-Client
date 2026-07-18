@@ -1,5 +1,6 @@
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { PlatformPressable } from '@react-navigation/elements';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import Icon from '../components/Icon';
@@ -46,6 +47,9 @@ function TabNavigator() {
           const meta = TAB_ICONS[route.name as keyof RootTabParamList];
           return <Icon name={focused ? meta.iconActive : meta.icon} size={size} color={color} />;
         },
+        tabBarButton: (props) => (
+          <PlatformPressable {...props} android_ripple={{ color: 'transparent' }} pressOpacity={1} />
+        ),
       })}
     >
       <Tab.Screen name="Home" component={HomeScreen} options={{ title: '홈' }} />
