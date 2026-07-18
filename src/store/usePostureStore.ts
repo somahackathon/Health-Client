@@ -98,22 +98,25 @@ function finish(
   jobId: string,
   exerciseType: string,
   feedback: Feedback[] | null,
+  failureCode: AiFailureCode | null,
   failureMessage: string | null
 ) {
+  const errorMessage = status === 'COMPLETED' ? null : aiFailureText(failureCode, failureMessage ?? '자세 분석에 실패했어요');
+
   analysisJobsDb.savePostureAnalysis({
     jobId,
     exerciseType,
     status,
     modelVersion: null,
     feedback,
-    failureMessage,
+    failureMessage: errorMessage,
     completedAt: new Date().toISOString(),
   });
 
   if (status === 'COMPLETED') {
     set({ status: 'done', jobId, feedback, errorMessage: null });
   } else {
-    set({ status: 'error', errorMessage: failureMessage ?? '자세 분석에 실패했어요' });
+    set({ status: 'error', errorMessage });
   }
 }
 
