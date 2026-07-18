@@ -1,8 +1,8 @@
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
-import { migrate } from './src/db/client';
-import RootNavigator from './src/navigation/RootNavigator';
-import { useProfileStore } from './src/store/useProfileStore';
+import RootNavigator from './src/app/navigation/RootNavigator';
+import { useProfileStore } from './src/entities/profile/model/useProfileStore';
+import { migrate } from './src/shared/db/client';
 
 migrate();
 useProfileStore.getState().load();
