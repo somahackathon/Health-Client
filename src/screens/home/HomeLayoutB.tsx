@@ -8,7 +8,7 @@ import { colors, radius, withAlpha } from '../../theme/colors';
 import { Shortcut } from '../HomeScreen';
 
 type Props = {
-  overall: number;
+  overall: number | null;
   overallFg: string;
   overallText: string;
   measuredDate: string;
@@ -21,28 +21,28 @@ export default function HomeLayoutB({ overall, overallFg, overallText, measuredD
   return (
     <View style={{ paddingBottom: 24 }}>
       <View style={[styles.hero, { backgroundColor: withAlpha(colors.primaryNormal, 0.08) }]}>
-        <CircularProgress size={132} strokeWidth={10} progress={1 - (overall - 1) / 5} color={overallFg}>
+        <CircularProgress size={132} strokeWidth={10} progress={overall ? 1 - (overall - 1) / 5 : 0} color={overallFg}>
           <View style={{ alignItems: 'center' }}>
-            <Text style={[styles.heroGrade, { color: overallFg }]}>{overall}</Text>
+            <Text style={[styles.heroGrade, { color: overallFg }]}>{overall ?? '-'}</Text>
             <Text style={styles.heroLabel}>종합 등급</Text>
           </View>
         </CircularProgress>
         <Text style={styles.heroTitle}>{`지금 체력은 '${overallText}'`}</Text>
-        <Text style={styles.heroCaption}>최근 측정 {measuredDate} · 5개 종목</Text>
+        <Text style={styles.heroCaption}>최근 측정 {measuredDate} · {papsEvents.length}개 종목</Text>
       </View>
 
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.row} contentContainerStyle={{ gap: 12, paddingHorizontal: 20 }}>
         {papsEvents.map((ev) => (
           <View key={ev.id} style={styles.eventCard}>
             <View style={[styles.gradeBadge, { backgroundColor: ev.bg }]}>
-              <Text style={[styles.gradeBadgeText, { color: ev.fg }]}>{ev.grade}등급</Text>
+              <Text style={[styles.gradeBadgeText, { color: ev.fg }]}>{ev.grade ? `${ev.grade}등급` : '-'}</Text>
             </View>
             <Text style={styles.eventName} numberOfLines={2}>
               {ev.name}
             </Text>
             <Text style={styles.eventValue}>
-              {ev.value}
-              <Text style={styles.eventUnit}>{ev.unit}</Text>
+              {ev.value ?? '-'}
+              {ev.value !== null && <Text style={styles.eventUnit}>{ev.unit}</Text>}
             </Text>
           </View>
         ))}

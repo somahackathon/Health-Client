@@ -6,7 +6,7 @@ import { colors, radius } from '../../theme/colors';
 import { Shortcut } from '../HomeScreen';
 
 type Props = {
-  overall: number;
+  overall: number | null;
   overallFg: string;
   overallText: string;
   measuredDate: string;
@@ -21,7 +21,7 @@ export default function HomeLayoutC({ overall, overallFg, overallText, measuredD
       <View style={styles.grid}>
         <View style={[styles.overallCard, { backgroundColor: overallFg }]}>
           <View style={styles.overallBadge}>
-            <Text style={styles.overallGrade}>{overall}</Text>
+            <Text style={styles.overallGrade}>{overall ?? '-'}</Text>
           </View>
           <View style={{ flex: 1 }}>
             <Text style={styles.overallEyebrow}>종합 체력 등급</Text>
@@ -38,15 +38,15 @@ export default function HomeLayoutC({ overall, overallFg, overallText, measuredD
             <View style={styles.eventHeader}>
               <Text style={styles.eventCat}>{ev.cat}</Text>
               <View style={[styles.gradeChip, { backgroundColor: ev.bg }]}>
-                <Text style={[styles.gradeChipText, { color: ev.fg }]}>{ev.grade}</Text>
+                <Text style={[styles.gradeChipText, { color: ev.fg }]}>{ev.grade ?? '-'}</Text>
               </View>
             </View>
             <Text style={styles.eventName} numberOfLines={2}>
               {ev.name}
             </Text>
             <Text style={styles.eventValue}>
-              {ev.value}
-              <Text style={styles.eventUnit}> {ev.unit}</Text>
+              {ev.value ?? '-'}
+              {ev.value !== null && <Text style={styles.eventUnit}> {ev.unit}</Text>}
             </Text>
           </View>
         ))}
