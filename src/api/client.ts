@@ -1,4 +1,4 @@
-import { fetch as expoFetch } from 'expo/fetch';
+import { File, UploadType } from 'expo-file-system';
 
 import { API_BASE_URL } from '../config/env';
 import { ApiEnvelope } from './types';
@@ -14,12 +14,21 @@ export class ApiError extends Error {
   }
 }
 
-async function unwrap<T>(res: { json(): Promise<ApiEnvelope<T>>; status: number }): Promise<T> {
-  const body: ApiEnvelope<T> = await res.json();
+function unwrapText<T>(bodyText: string, status: number): T {
+  let body: ApiEnvelope<T>;
+  try {
+    body = JSON.parse(bodyText);
+  } catch {
+    throw new ApiError('INVALID_RESPONSE', '서버 응답을 처리하지 못했어요. 잠시 후 다시 시도해 주세요');
+  }
   if (!body.success || !body.data) {
-    throw new ApiError(body.error?.code ?? 'UNKNOWN', body.error?.message ?? `Request failed (${res.status})`, body.error?.details);
+    throw new ApiError(body.error?.code ?? 'UNKNOWN', body.error?.message ?? `Request failed (${status})`, body.error?.details);
   }
   return body.data;
+}
+
+async function unwrap<T>(res: Response): Promise<T> {
+  return unwrapText<T>(await res.text(), res.status);
 }
 
 export async function apiGet<T>(
@@ -47,21 +56,28 @@ export async function apiPostJson<T>(path: string, body: unknown, headers?: Reco
   return unwrap<T>(res);
 }
 
-export async function apiPostMultipart<T>(
+// Uses expo-file-system's native upload task instead of building FormData in JS —
+// streaming a large video through global fetch/expo-fetch's multipart body triggered
+// an OkHttp "stream was reset" failure; the native uploader avoids that entirely.
+export async function apiUploadFile<T>(
   path: string,
-  query: Record<string, string>,
-  form: FormData,
+  fileUri: string,
+  fieldName: string,
+  mimeType: string,
+  query?: Record<string, string>,
   headers?: Record<string, string>
 ): Promise<T> {
-  const qs = Object.entries(query)
-    .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
-    .join('&');
-  // File/Blob-backed FormData bodies need expo/fetch's network stack — RN's
-  // built-in global fetch only accepts the legacy { uri, name, type } part shape.
-  const res = await expoFetch(`${API_BASE_URL}${path}${qs ? `?${qs}` : ''}`, {
-    method: 'POST',
+  const qs = query
+    ? Object.entries(query)
+        .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
+        .join('&')
+    : '';
+  const file = new File(fileUri);
+  const result = await file.upload(`${API_BASE_URL}${path}${qs ? `?${qs}` : ''}`, {
+    uploadType: UploadType.MULTIPART,
+    fieldName,
+    mimeType,
     headers,
-    body: form,
   });
-  return unwrap<T>(res);
+  return unwrapText<T>(result.body, result.status);
 }
